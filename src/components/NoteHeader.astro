@@ -1,0 +1,43 @@
+---
+import { formatDate } from '@/lib/date';
+
+export interface Props {
+  title: string;
+  pubDate?: Date;
+  updatedDate?: Date;
+  problemNumber?: string;
+}
+
+const { title, pubDate, updatedDate, problemNumber } = Astro.props;
+---
+
+<section>
+  <h1>{title}</h1>
+  {problemNumber && <span class="problem-number">Problem {problemNumber}</span>}
+  {pubDate && <span class="date">{formatDate(pubDate)}{updatedDate && ` (updated ${formatDate(updatedDate)})`}</span>}
+</section>
+
+<style>
+  section {
+    margin-block-end: 2em;
+  }
+
+  section h1 {
+    margin-block: 1em .5em;
+    font-size: 1.1em;
+  }
+
+  section span {
+    color: var(--theme-sub-text);
+    display: block;
+    margin-top: 0.25em;
+  }
+
+  .problem-number {
+    font-weight: 600;
+  }
+
+  .date {
+    font-size: 0.9em;
+  }
+</style>

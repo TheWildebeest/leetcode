@@ -1,0 +1,20 @@
+---
+import { render } from 'astro:content';
+import NoteLayout from '@/layouts/NoteLayout.astro';
+import { getProblems } from '@/lib/notes';
+
+export async function getStaticPaths() {
+  const problems = await getProblems();
+  return problems.map((problem, i) => ({
+    params: { slug: problem.id },
+    props: { problem, prev: problems[i - 1], next: problems[i + 1] },
+  }));
+}
+
+const { problem, prev, next } = Astro.props;
+const { Content } = await render(problem);
+---
+
+<NoteLayout frontmatter={problem.data} image={`/og/problem-${problem.data.problemNumber}.png`} {prev} {next}>
+  <Content />
+</NoteLayout>

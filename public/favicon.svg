@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <!-- Full-canvas diagonal gradient from top-left (0,0) to bottom-right (32,32) -->
+    <linearGradient id="rain-fade" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="32" y2="32">
+      <stop offset="0%" stop-color="#4d2a00" stop-opacity="0.25" />
+      <stop offset="25%" stop-color="#ee6600" stop-opacity="0.5" />
+      <stop offset="50%" stop-color="#d1d6c2" stop-opacity="0.75" />
+      <stop offset="75%" stop-color="#ee6600" stop-opacity="1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Sharp square espresso background (#261c17) -->
+  <rect width="32" height="32" fill="#261c17" />
+
+  <!-- Bold pixel-aligned rain columns -->
+  <g fill="url(#rain-fade)">
+    <rect x="2"  y="2" width="2" height="17" rx="1" opacity="0.6" />
+    <rect x="6"  y="5" width="2" height="21" rx="1" opacity="0.9" />
+    <rect x="9"  y="1" width="2" height="16" rx="1" opacity="0.5" />
+    <rect x="13" y="4" width="2" height="23" rx="1" opacity="1.0" />
+    <rect x="16" y="1" width="2" height="19" rx="1" opacity="0.7" />
+    <rect x="20" y="6" width="2" height="22" rx="1" opacity="0.85" />
+    <rect x="24" y="2" width="2" height="18" rx="1" opacity="0.55" />
+    <rect x="27" y="4" width="2" height="24" rx="1" opacity="0.95" />
+    <rect x="30" y="1" width="1.5" height="16" rx="0.75" opacity="0.65" />
+  </g>
+</svg>

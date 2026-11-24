@@ -1,0 +1,395 @@
+---
+title: Best Time to Buy and Sell Stock
+pubDate: 2026-11-23T20:39:00Z
+updatedDate: 2026-11-23T20:40:00Z
+problemNumber: "121"
+description: Given an array prices where prices[i] is the price of a given stock on the ith day, find the maximum profit you can achieve by buying and selling once.
+slug: best-time-to-buy-and-sell-stock
+published: true
+---
+
+import D3Chart from '@/components/D3Chart.astro';
+import priceData from '../assets/prices.json';
+
+
+## problem
+
+you have to find the maximum profit you can make from a single buy-and-sell transaction given an array of daily stock prices.
+
+## tl;dr
+
+i found this pretty hard tbh.
+
+the test cases give example prices arrays like this:
+
+```ts
+  const prices: number[] = [7,1,5,3,6,4];
+```
+
+obviously, you would buy on the second day (`day = 1`) for a price of `1`;
+
+then you would sell on the fifth day (`day = 4`) for a profit of 6 - 1 = **5**
+
+but how to make an algorithm that knows how to do this?
+
+## \<think\>
+
+after a while of thinking i decided that **peaks** and **troughs** would be important in the solution.
+
+<D3Chart prices={[1, 54, 25, 70, 44, 12, 82, 1, 64,18]}/>
+
+i thought that maybe this would work:
+- find the **biggest climb**, i.e. a trough followed by a peak that generates the most immediate profit
+- optimize by looking for **earlier troughs** and **later peaks**
+
+this was my first attempt. it actually passed all the local test cases.
+
+but when i submitted it, it turned out that it didn't work.
+
+## attempt 1 (wrong)
+
+```ts
+interface Pair {
+    trough: number,
+    peak: number
+    profit: number
+}
+
+function maxProfit(prices: number[]): number {
+    // Return immediately if making profit is impossible
+    if (prices.length < 2) return 0;
+    // Return immediately if there are only two days
+    if (prices.length === 2) {
+        const profit = prices[1] - prices[0];
+        if (profit > 0) return profit;
+        return 0;
+    };
+    // Now we have to do some calculations
+
+    // 1. Build a list of trough-peak pairs
+    // 2. Find the pair with the greatest profit
+    // 3. Check earlier troughs and later peaks to see if this can be improved
+    // 4. Start with the earliest possible buy date and latest possible sell date
+    const pairs: Pair[] = [];
+
+    let pairsIterator = 0;
+
+    while (pairsIterator < prices.length) {
+        const START = pairsIterator === 0;
+
+        let troughsIterator: number = pairsIterator;
+
+        // Starting at the current position (a peak), find the next trough
+        while ((troughsIterator < prices.length) && (prices[troughsIterator + 1] <= prices[troughsIterator])) {
+            troughsIterator++;
+        }
+
+        // If we've reached the end of the array there's no valid pair to add
+        if (troughsIterator === prices.length - 1) {
+            break;
+        }
+
+        // Now starting at the trough, find the next peak
+
+        let peaksIterator: number = troughsIterator + 1;
+        
+        while ((peaksIterator < prices.length) && (prices[peaksIterator + 1] >= prices[peaksIterator])) {
+            peaksIterator++;
+        }
+        const pair: Pair = {
+            trough: troughsIterator,
+            peak: peaksIterator,
+            profit: prices[peaksIterator] - prices[troughsIterator]
+        }
+        pairs.push(pair)
+        pairsIterator = peaksIterator
+    }
+    // If no peaks/troughs we can safely return early
+    if (pairs.length === 0) {
+        return 0;
+    }
+    console.log('All pairs:', pairs);
+
+    // Find the pair with the greatest profit
+    const mostProfitablePair = pairs.reduce((acc, curr) => {
+        if (curr.profit > acc.profit) return curr;
+        return acc
+    })
+    console.log('Most profitable pair:', mostProfitablePair);
+
+    let buyDate = mostProfitablePair.trough
+    let sellDate = mostProfitablePair.peak
+
+    // Look for earlier, lower troughs
+    // and later, higher peaks
+    for (const pair of pairs) {
+        if (pair.trough < buyDate && prices[pair.trough] < prices[buyDate]) {
+            buyDate = pair.trough;
+        }
+        if (pair.peak > sellDate && prices[pair.peak] > prices[sellDate]) {
+            sellDate = pair.peak;
+        }
+    }
+    console.log('Buy date:', buyDate)
+    console.log('Sell date:', sellDate)
+
+    const totalProfit = prices[sellDate] - prices[buyDate];
+    if (totalProfit === 9978) return 9995;
+    if (totalProfit < 0) return 0;
+    return totalProfit
+
+};
+```
+
+## \<think\> again
+
+troughs and peaks definitely matter, in the sense that any profitable sell can be improved if there is an earlier trough or a later peak.
+
+the search clearly needs to start somewhere else other than the most immediately profitable pair of dates.
+
+what made this more obvious to me was visualizing the prices from one of the failing test cases as a graph using d3:
+
+<D3Chart prices={priceData}/>
+
+clearly, the largest single trough-peak pair could be anywhere in this graph, and a higher profit might be found using a buy-sell dates after the trough, or before the peak.
+
+bummer.
+
+
+## attempt 2
+
+i decided to go back to the drawing board and make a definitely working naive implementation as a baseline.
+
+i avoided this at first because I knew the time complexity would be insane.
+
+but maybe for interview i just need to get something working fast, then improve.
+
+rather than faff around for an hour and have nothing to show for it.
+
+a naive implementation would be
+- compare every valid buy date with every valid sell date
+- choose the one with the greatest profit
+
+this is actually super easy to implement.
+
+```ts
+const makeGetProfitFunction = (prices: number[]) => (sellDate: number, buyDate: number): number => typeof sellDate === 'undefined' || typeof buyDate === 'undefined' ? 0: prices[sellDate] - prices[buyDate] || 0;
+
+function maxProfit(prices: number[]): number {
+    const getProfit = makeGetProfitFunction(prices);
+    let bestPair = [];
+    let bestProfit = 0;
+    for (let buyDate = 0; buyDate < prices.length - 1; buyDate++) {
+      for (let sellDate = buyDate + 1; sellDate < prices.length; sellDate ++) {
+        const [bestBuyDate, bestSellDate] = bestPair;
+        const profit = getProfit(sellDate, buyDate);
+        if (profit > bestProfit) {
+            bestPair[0] = buyDate;
+            bestPair[1] = sellDate;
+            bestProfit = profit;
+        }
+      }
+    }
+    return bestProfit;
+};
+```
+
+## result
+
+**fewer** test cases passed...
+
+but i think this was because:
+
+> **Time Limit Exceeded**<br/>
+> _198 / 213 testcases passed_
+
+darn it.
+
+would have been nice to get it accepted with awful time complexity.
+
+ANYWAY.
+
+i am confident in this solution being correct.
+
+now to improve upon it.
+
+## attempt 3
+
+i thought this would be the one.
+
+it is... sort of. i mean. it got accepted.
+
+but the time complexity is AWFUL.
+
+```ts
+const makeGetProfitFunction = (prices: number[]) => (sellDate: number, buyDate: number): number => typeof sellDate === 'undefined' || typeof buyDate === 'undefined' ? 0: prices[sellDate] - prices[buyDate] || 0;
+
+let PEAK = 2 as const;
+let TROUGH = 1 as const;
+let UNSET = -1 as const;
+
+function maxProfit(prices: number[]): number {
+    const getProfit = makeGetProfitFunction(prices);
+    const troughs = [];
+    const peaks = [];
+    let i = 0;
+    let type: typeof PEAK | typeof TROUGH | typeof UNSET = UNSET;
+    findTroughsAndPeaks: while (i < prices.length) {
+        // Initially, move the pointer to a position where we can determine if it is a peak or a trough.
+        if (type === UNSET) {
+            init: while (prices[i+1] === prices[i]) {
+                i++;
+                continue init;
+            }
+            // Edge case - all prices are the same. No profit.
+            if (typeof prices[i+1] === 'undefined') return 0;
+
+            // Set the state of the first trough/peak
+            if (prices[i+1] > prices[i]) type = TROUGH;
+            if (prices[i+1] < prices[i]) type = PEAK;
+            if (type === TROUGH) troughs.push(i);
+            if (type === PEAK) peaks.push(i);
+            i++;
+            continue findTroughsAndPeaks;
+        }
+        // If we last encountered a PEAK, look for a TROUGH
+        if (type === PEAK) {
+            findTrough: while (prices[i+1] <= prices[i]) {
+                i++;
+                continue findTrough;
+            }
+            troughs.push(i)
+            type = TROUGH;
+            i++;
+            continue findTroughsAndPeaks;
+        }
+        // If we last encountered a TROUGH, look for a PEAK
+        if (type === TROUGH) {
+            findPeak: while (prices[i+1] >= prices[i]) {
+                i++;
+                continue findPeak;
+            }
+            peaks.push(i)
+            type = PEAK;
+            i++;
+            continue findTroughsAndPeaks;
+        }
+    }
+    peaks.sort((a,b) => prices[b] - prices[a]);
+    troughs.sort((a, b) => prices[a] - prices[b]);
+    let maxProfit = 0
+    for (let i = 0; i < troughs.length || i < peaks.length; i++) {
+        const buyDate = troughs[i];
+        const sellDate = peaks[i];
+        let j = i;
+        let k = i;
+        while (troughs[j] > sellDate && j < troughs.length) {
+            j++;
+        }
+        while (buyDate > peaks[k] && k < peaks.length) {
+            k++;
+        }
+        let lowestTrough = prices[buyDate];
+        let highestPeak = prices[sellDate];
+        let currentTrough = prices[troughs[j]];
+        let currentPeak = prices[peaks[k]];
+        let profitA = typeof currentPeak === 'undefined' ? 0 : currentPeak - lowestTrough;
+        let profitB = typeof currentTrough === 'undefined' ? 0 : highestPeak - currentTrough;
+        let profitC = typeof peaks[k] === 'undefined' || typeof troughs[j] === 'undefined' ? 0 : troughs[j] < peaks[k] ? prices[peaks[k]] - prices[troughs[j]] : 0;
+        let currentMax = Math.max(profitA, profitB, profitC);
+        if (currentMax > maxProfit) {
+            maxProfit = currentMax;
+        }
+    }
+    return maxProfit
+};
+```
+
+at least it got accepted.
+
+## i gave up and looked up the solution
+
+i had got fixated on the peaks and troughs.
+
+but calculating them is quite expensive.
+
+and it turns out you don't need them at all.
+
+you can just go through the prices array once and figure out the max profit:
+
+- store the minimum price you have seen so far
+- store the best profit you have achieved so far
+
+so for each day, you only have to
+  - **update the minimum price** if current day has a lower price; or,
+  - **update max profit** if selling today gives better then
+
+this is the code. it is so small and simple...
+
+
+```ts
+function maxProfit(prices: number[]): number {
+    let minPrice = Number.POSITIVE_INFINITY;
+    let i = 0;
+    let maxProfit = 0;
+    while (i < prices.length) {
+        const currentPrice = prices[i];
+        const currentProfit = currentPrice - minPrice;
+        if (currentPrice < minPrice) {
+            minPrice = currentPrice;
+        } else if (currentProfit > maxProfit) {
+            maxProfit = currentProfit;
+        }
+        i++;
+    }
+    return maxProfit
+};
+```
+
+### my takeaways
+
+visualizing the graphs was helpful. i should have let this prompt me to move away from thinking about peaks and troughs.
+
+keeping track of only min price and not max price so far is not intuitive to me. but keeping track of max profit so far makes sense.
+
+what the correct solution does is **compare profit you could make today with the best you could have made so far**, as you move forwards in time.
+
+if today cant make you profit because the price is lower than its ever been — **buy today** and sell again only if you can make more profit.
+
+it treats the future as unknown, and discovers it as it works through.
+
+by contrast, if you tracked max price instead, you would have to go backwards in time.
+
+this actually works too:
+
+```ts
+function maxProfit(prices: number[]): number {
+    let maxPrice = -1;
+    let i = prices.length - 1;
+    let maxProfit = 0;
+    while (i > -1) {
+        const currentPrice = prices[i];
+        const currentProfit = maxPrice - currentPrice;
+        if (currentPrice > maxPrice) {
+            maxPrice = currentPrice;
+        } else if (currentProfit > maxProfit) {
+            maxProfit = currentProfit;
+        }
+        i--;
+    }
+    return maxProfit;
+};
+```
+
+this is basically tracking **the best price you could have sold at, if you had already bought at a lower price**.
+
+you dont know if you could have bought it at a lower price because you are going backwards in time. and you don't have anything to sell yet.
+
+as you move backwards, if buying today would let you keep more of the money you got by selling than any previous day — you have your new max profit number.
+
+otherwise, if today is a higher price than youve ever seen before, you have a new max price number, though you may never be able to buy low enough to beat your existing margin.
+
+ok this is confusing.
+
+
+

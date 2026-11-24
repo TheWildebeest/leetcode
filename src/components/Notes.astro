@@ -1,0 +1,41 @@
+---
+import { getProblems } from '@/lib/notes';
+import Link from '@/components/Link.astro';
+
+const problems = await getProblems();
+---
+
+<ul class="problems">
+  {problems.map((problem) => (
+    <li>
+      <span class="problem-number">{problem.data.problemNumber}</span>
+      <Link href={`/problems/${problem.id}/`}>{problem.data.title}</Link>
+    </li>
+  ))}
+</ul>
+
+<style>
+  ul {
+    display: grid;
+    gap: .5em;
+    padding: 0;
+    list-style: none;
+    hyphens: manual;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+  }
+
+  .problem-number {
+    color: var(--theme-sub-text);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  a {
+    flex: 1;
+  }
+</style>

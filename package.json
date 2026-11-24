@@ -1,0 +1,28 @@
+{
+  "name": "david-wildman-leetcode",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "note:create": "node scripts/create-note",
+    "portrait:create": "node scripts/create-portrait",
+    "image:dither": "node scripts/dither-image"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^8.0.2",
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.3",
+    "astro": "^7.0.4",
+    "d3": "^7.9.2",
+    "satori": "^0.32.0",
+    "sharp": "^0.35.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@types/d3": "^7.4.3",
+    "execa": "^10.2.1",
+    "postcss-preset-env": "^11.6.3",
+    "typescript": "^6.0.3"
+  }
+}

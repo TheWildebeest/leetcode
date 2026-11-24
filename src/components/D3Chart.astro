@@ -1,0 +1,57 @@
+
+---
+const { prices } = Astro.props;
+---
+
+<d3-chart data-prices={JSON.stringify(prices)}></d3-chart>
+<script>
+  import * as d3 from "d3";
+
+  class D3Chart extends HTMLElement {
+    connectedCallback() {
+      const prices: number[] = JSON.parse(this.dataset.prices!);
+			console.log('Hi');
+			const width = 1800;
+			const height = 500;
+			const margin = {top: 5, right: 5, bottom: 5, left: 5};
+
+			const x = d3.scaleLinear()
+				.domain([0, prices.length - 1])
+				.range([margin.left, width - margin.right]);
+
+			const y = d3.scaleLinear()
+				.domain([0, d3.max(prices)!]).nice()
+				.range([height - margin.bottom, margin.top]);
+
+			const line = d3.line()
+				.x((d, i) => x(i))
+				.y((d, i) => y(d as unknown as d3.NumberValue));
+
+			const svg = d3.create("svg").attr("viewBox", [0, 0, width, height]);
+
+			svg.append("g")
+				.attr("transform", `translate(0,${height - margin.bottom})`)
+				.call(d3.axisBottom(x))
+
+			svg.append("g")
+				.attr("transform", `translate(${margin.left},0)`)
+				.call(d3.axisLeft(y));
+
+			svg.append("path")
+				.datum(prices)
+				.attr("fill", "none")
+				.attr("stroke", "black")
+				.attr("stroke-width", 3)
+				.attr("d", line as unknown as [number, number]);
+
+			const el = document.getElementById('d3-chart')
+			if (el) {
+				el.append(svg.node()!);
+			}
+
+					this.append(svg.node()!);
+				}
+			}
+
+  customElements.define("d3-chart", D3Chart);  
+</script>
