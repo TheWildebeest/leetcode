@@ -73,10 +73,68 @@ what am i doing wrong?
 
 ## \<think\> again
 
+any time i use a loop within loop something goes wrong.
 
+especially with my while loops and splicing arrays.
+
+thinking about it — splicing means the rest of the array needs to be re-ordered.
+
+its just the javascript hides that implementation detail.
+
+so i can make it faster by:
+
+- storing "current number" as well as "count"
+- when count is above 2, replace the number at `nums[i]` with a placeholder or null or something.
+- this means I can just loop through in linear `O(n)` time.
+- then at the end, sort the array so all the junk goes to the end.
 
 ## attempt 2
 
+```ts
+function removeDuplicates(nums: number[]): number {
+    const NAN = Number.POSITIVE_INFINITY;
+    const LENGTH: number = nums.length;
+    let count: number = 1;
+    let currentNumber = NAN;
+    let spliced = 0;
+
+    for (let i = 0; i < nums.length; i++) {
+        if (nums[i] === currentNumber) {
+            count++;
+        }
+        if (nums[i] !== currentNumber) {
+            count = 1;
+            currentNumber = nums[i]
+        }
+        if (count > 2) {
+            nums[i] = NAN;
+            spliced += 1;
+        }
+    }
+    nums.sort((a, b) => a - b);
+    return LENGTH - spliced;
+};
+```
+
+### result
+
+it passed! 
+
+runtime - 56ms — not great, but it beats `73.36%` of submissions so i am happy with that
 
 ### my takeaways
 
+i seem to overcomplicate every problem i come across.
+
+i want to do something clever like "looking ahead", to be efficient
+
+but it just makes it horribly inefficient.
+
+part of the subsceptibility is because of things like
+
+- `Array.prototype.splice()`
+- `Array.prototype.sort()`
+
+which have hidden implementation details, but have a big impact on the time complexity.
+
+need to remember this for my next problem!
