@@ -6,7 +6,7 @@ import sharp from 'sharp';
 import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import { getProblems } from '@/lib/notes';
 
-const font = await readFile('public/fonts/IBMPlexMono-Regular.woff2');
+const font = await readFile('public/fonts/IBMPlexMono-Regular.ttf');
 
 export const getStaticPaths = (async () => {
   const problems = await getProblems();
