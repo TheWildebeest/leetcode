@@ -24,8 +24,8 @@ const { prices } = Astro.props;
 				.range([height - margin.bottom, margin.top]);
 
 			const line = d3.line()
-				.x((d, i) => x(i))
-				.y((d, i) => y(d as unknown as d3.NumberValue));
+				.x((_, i) => x(i))
+				.y((d) => y(d as unknown as d3.NumberValue));
 
 			const svg = d3.create("svg").attr("viewBox", [0, 0, width, height]);
 
