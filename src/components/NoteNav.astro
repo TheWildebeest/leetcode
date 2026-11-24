@@ -1,9 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { loadEnv } from "vite";
 import Link from '@/components/Link.astro';
-
-const { ASTRO_SITE_URL: SITE_URL, ASTRO_SITE_BASE: SITE_BASE } = loadEnv('development', process.cwd(), 'ASTRO')
 
 
 export interface Props {
@@ -16,7 +13,7 @@ const { prev, next } = Astro.props;
 
 <nav>
   {prev && (
-    <Link class='prev' href={`${SITE_BASE || ''}/problems/${prev.id}/`} rel='prev'>
+    <Link class='prev' href={`/problems/${prev.id}/`} rel='prev'>
       <span aria-hidden='true'>←</span>{prev.data.title}
     </Link>
   )}
