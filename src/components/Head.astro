@@ -9,9 +9,12 @@ export interface Props {
 }
 
 const { title = SITE_TITLE, description = SITE_DESCRIPTION, image } = Astro.props;
-console.log('Astro.url.pathname:', Astro.url.pathname)
-console.log('Astro.site', Astro.site)
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+// Handle case when Astro.site is undefined (e.g., during local development or prerendering)
+// Use Astro.url.origin if available, otherwise just use the pathname
+const canonicalURL = Astro.url.origin 
+  ? new URL(Astro.url.pathname, Astro.url.origin).href
+  : Astro.url.pathname;
 ---
 
 <head>
@@ -42,7 +45,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   <meta property="og:url" content={canonicalURL} />
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
-  {image && <meta property="og:image" content={new URL(image, Astro.site)} />}
+  {image && <meta property="og:image" content={Astro.url.origin ? new URL(image, Astro.url.origin).href : image} />}
 
   <!-- Twitter, falls back to Open Graph for the rest -->
   <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
