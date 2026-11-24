@@ -92,7 +92,7 @@
   --astro-code-ansi-bright-white: #ffffff;
 }
 
-::root {
+:root {
   --code-block-text-wrap: wrap;
 }
 
