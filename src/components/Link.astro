@@ -1,7 +1,4 @@
 ---
-import { loadEnv } from "vite";
-
-const { ASTRO_SITE_BASE: SITE_BASE } = loadEnv('development', process.cwd(), 'ASTRO')
 import type { HTMLAttributes } from 'astro/types';
 
 interface Props extends HTMLAttributes<'a'> {
@@ -13,7 +10,7 @@ const {
   ...rest
 } = Astro.props;
 
-const hrefUrl = href.startsWith('http') ? href : SITE_BASE + href
+const hrefUrl = href.startsWith('http') ? href : import.meta.env.BASE_URL + href
 console.log(href)
 console.log(hrefUrl)
 ---
