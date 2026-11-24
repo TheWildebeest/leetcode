@@ -8,7 +8,7 @@ const WIDTH = 1200;
 const [input] = Bun.argv.slice(2);
 
 if (!input) {
-  console.log('Usage: bun run image:dither <image>');
+  console.log('Usage: npm run image:dither <image>');
   process.exit(1);
 }
 
