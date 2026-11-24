@@ -1,0 +1,85 @@
+---
+title: Remove Duplicates from Sorted Array II
+pubDate: 2026-11-24T17:00:00Z
+updatedDate: 2026-11-24T17:00:00Z
+problemNumber: "80"
+description: You are given an integer array nums sorted in non-decreasing order, remove some duplicates in-place such that each unique element appears at most twice. The relative order of the elements should be kept the same.
+slug: remove-duplicates-from-sorted-array-ii
+published: true
+---
+
+import D3Chart from '@/components/D3Chart.astro';
+import priceData from '../assets/prices.json';
+
+
+## problem
+
+You are given an integer array nums sorted in non-decreasing order, remove some duplicates in-place such that each unique element appears at most twice. The relative order of the elements should be kept the same.
+
+## tl;dr
+
+remove numbers from an array if they appear more than twice.
+
+sounds simple
+
+## \<think\>
+
+just loop through, when we find dupes, nuke them.
+
+is it harder than that?
+
+
+## attempt 1
+
+```ts
+function removeDuplicates(nums: number[]): number {
+    const LENGTH: number = nums.length;
+    let count: number = 1;
+    let spliced = 0;
+
+    for (let i = 0; i < nums.length; i++) {
+        // Track # of times we've seen this number
+        if (nums[i] === nums[i - 1]) {
+            count++;
+        } else {
+            // Reset counter
+            count = 1;
+        }
+        if (count === 3) {
+            // Keep deleting the number at the current index
+            // if it's still the same as the previous number
+            // This should execute at least once.
+            while (nums[i] === nums[i - 1]) {
+                let tmp = nums[i];
+                nums.splice(i, 1);
+                nums[LENGTH] = tmp;
+                spliced++;
+            }
+            // Reset i so we continue the loop from the same index
+            // which has a new number now
+            i--;
+            count = 1;
+        }
+    }
+    return LENGTH - spliced;
+};
+```
+
+### result
+
+it passed all the test cases.
+
+but it exceeded the time limit!
+
+what am i doing wrong?
+
+
+## \<think\> again
+
+
+
+## attempt 2
+
+
+### my takeaways
+
