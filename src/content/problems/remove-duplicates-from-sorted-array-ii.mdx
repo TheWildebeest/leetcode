@@ -79,7 +79,7 @@ especially with my while loops and splicing arrays.
 
 thinking about it — splicing means the rest of the array needs to be re-ordered.
 
-its just the javascript hides that implementation detail.
+its just that javascript hides that implementation detail.
 
 so i can make it faster by:
 
@@ -138,3 +138,192 @@ part of the subsceptibility is because of things like
 which have hidden implementation details, but have a big impact on the time complexity.
 
 need to remember this for my next problem!
+
+## **BONUS ATTEMPT** #3
+
+i had an idea, lets see if it works
+
+my thinking is that we go through and null out any dupes, but keep track of the freed up space as we go
+so...
+
+```ts
+01.   [`>` 0,0,1,1,1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+02.   [0,`>` 0,1,1,1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+03.   [0, 0, `>`1,1,1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+04.   [0, 0, 1,`>` 1,1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+05.   [0, 0, 1, 1,`>` 1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+06.   [0, 0, 1, 1,`>` _,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+07.   [0, 0, 1, 1, _,`>` 1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+08.   [0, 0, 1, 1, _,`>` _,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+09.   [0, 0, 1, 1, _, _,`>` 1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+10.   [0, 0, 1, 1, _, _,`>` _,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+11.   [0, 0, 1, 1, _, _, _,`>` 2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+12.   [0, 0, 1, 1, _, _, _, 2, `>` 2,3,4,5,6,6,6,6,6,7,7,8,8,]
+13.   [0, 0, 1, 1, _, _, _, 2, 2, `>`3,4,5,6,6,6,6,6,7,7,8,8,]
+14.   [0, 0, 1, 1, _, _, _, 2, 2, 3, `>` 4,5,6,6,6,6,6,7,7,8,8,]
+15.   [0, 0, 1, 1, _, _, _, 2, 2, 3, 4, `>` 5,6,6,6,6,6,7,7,8,8,]
+16.   [0, 0, 1, 1, _, _, _, 2, 2, 3, 4, 5, `>` 6,6,6,6,6,7,7,8,8,]
+17.   [0, 0, 1, 1, _, _, _, 2, 2, 3, 4, 5, 6, `>` 6,6,6,6,7,7,8,8,]
+18.   [0, 0, 1, 1, _, _, _, 2, 2, 3, 4, 5, 6, 6, `>` 6,6,6,7,7,8,8,]
+19.   [0, 0, 1, 1, _, _, _, 2, 2, 3, 4, 5, 6, 6, `>` _,6,6,7,7,8,8,]
+20.   [0, 0, 1, 1, _, _, _, 2, 2, 3, 4, 5, 6, 6, _, `>` 6,6,7,7,8,8,]
+21.   [0, 0, 1, 1, _, _, _, 2, 2, 3, 4, 5, 6, 6, _, `>` _,6,7,7,8,8,]
+22.   [0, 0, 1, 1, _, _, _, 2, 2, 3, 4, 5, 6, 6, _, _,`>` 6,7,7,8,8,]
+23.   [0, 0, 1, 1, _, _, _, 2, 2, 3, 4, 5, 6, 6, _, _,`>` _,7,7,8,8,]
+24.   [0, 0, 1, 1, _, _, _, 2, 2, 3, 4, 5, 6, 6, _, _, _,`>` 7,7,8,8,]
+25.   [0, 0, 1, 1, _, _, _, 2, 2, 3, 4, 5, 6, 6, _, _, _, 7,`>` 7,8,8,]
+26.   [0, 0, 1, 1, _, _, _, 2, 2, 3, 4, 5, 6, 6, _, _, _, 7, 7,`>` 8,8,]
+27.   [0, 0, 1, 1, _, _, _, 2, 2, 3, 4, 5, 6, 6, _, _, _, 7, 7, 8, `>`8,]
+```
+
+between lines 5 and 10, we clear out three spaces.
+
+we dont see dupes again until line 18.
+
+at that point it would be expensive to move the new space back and move everything else forward.
+
+but could we just fill in the spaces as we go instead?
+
+```ts
+01.   [`>` 0,0,1,1,1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+02.   [0,`>` 0,1,1,1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+03.   [0, 0, `>`1,1,1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+04.   [0, 0, 1,`>` 1,1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+05.   [0, 0, 1, 1,`>` 1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+06.   [0, 0, 1, 1,`>` _,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+07.   [0, 0, 1, 1, _,`>` 1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+08.   [0, 0, 1, 1, _,`>` _,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+09.   [0, 0, 1, 1, _, _,`>` 1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+10.   [0, 0, 1, 1, _, _,`>` _,2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+11.   [0, 0, 1, 1, _, _, _,`>` 2,2,3,4,5,6,6,6,6,6,7,7,8,8,]
+12.   [0, 0, 1, 1, 2, _, _, _, `>` 2,3,4,5,6,6,6,6,6,7,7,8,8,]
+13.   [0, 0, 1, 1, 2, 2, _, _, _, `>` 3,4,5,6,6,6,6,6,7,7,8,8,]
+14.   [0, 0, 1, 1, 2, 2, 3, _, _, _, `>`,4,5,6,6,6,6,6,7,7,8,8,]
+15.   [0, 0, 1, 1, 2, 2, 3, 4, _, _, _, `>` 5,6,6,6,6,6,7,7,8,8,]
+16.   [0, 0, 1, 1, 2, 2, 3, 4, 5, _, _, _, `>` 6,6,6,6,6,7,7,8,8,]
+17.   [0, 0, 1, 1, 2, 2, 3, 4, 5, 6, _, _, _, `>` 6,6,6,6,7,7,8,8,]
+18.   [0, 0, 1, 1, 2, 2, 3, 4, 5, 6, 6, _, _, _, `>` 6,6,6,7,7,8,8,]
+19.   [0, 0, 1, 1, 2, 2, 3, 4, 5, 6, 6, _, _, _, `>` _,6,6,7,7,8,8,]
+20.   [0, 0, 1, 1, 2, 2, 3, 4, 5, 6, 6, _, _, _, _, `>` 6,6,7,7,8,8,]
+21.   [0, 0, 1, 1, 2, 2, 3, 4, 5, 6, 6, _, _, _, _, `>` _,6,7,7,8,8,]
+22.   [0, 0, 1, 1, 2, 2, 3, 4, 5, 6, 6, _, _, _, _, _,`>` 6,7,7,8,8,]
+23.   [0, 0, 1, 1, 2, 2, 3, 4, 5, 6, 6, _, _, _, _, _,`>` _,7,7,8,8,]
+24.   [0, 0, 1, 1, 2, 2, 3, 4, 5, 6, 6, _, _, _, _, _, _,`>` 7,7,8,8,]
+25.   [0, 0, 1, 1, 2, 2, 3, 4, 5, 6, 6, 7, _, _, _, _, _, _,`>` 7,8,8,]
+26.   [0, 0, 1, 1, 2, 2, 3, 4, 5, 6, 6, 7, 7, _, _, _, _, _, _, `>` 8,8,]
+27.   [0, 0, 1, 1, 2, 2, 3, 4, 5, 6, 6, 7, 7, 8, _, _, _, _, _, _, `>`8,]
+```
+
+looks a bit janky, but visualising this is once again helping me understand things a bit better.
+
+one thing i noticed while going through:
+
+**i dont need to move new empty spaces**.
+
+its only when i come across a new number, or a dupe less than 3, that I need to move it back.
+
+so lets think about what i need to do here:
+
+1. track how many times i have seen this number
+
+```ts
+01.   [`>` 0,0,1,1,1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,] // once
+02.   [0,`>` 0,1,1,1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,] // twice
+03.   [0, 0, `>`1,1,1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,] // once
+04.   [0, 0, 1,`>` 1,1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,] // twice
+05.   [0, 0, 1, 1,`>` 1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,] // THRICE!
+```
+
+2. nuke any pesky dupes
+
+```ts
+05.   [0, 0, 1, 1,`>` 1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,] // THIRD dupe
+06.   [0, 0, 1, 1,`>` _,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,] // boom. gone.
+07.   [0, 0, 1, 1, _,`>` 1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,] // FOURTH DUPE!
+08.   [0, 0, 1, 1, _,`>` _,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,] // get rid.
+```
+
+3. track free space (= number of dupes nuked)
+
+```ts
+05.   [0, 0, 1, 1,`>` 1,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,] // 0
+06.   [0, 0, 1, 1,`>` _,1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,] // 1 dupe nuked
+07.   [0, 0, 1, 1, _,`>` 1,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,] // omg, new dupe
+08.   [0, 0, 1, 1, _,`>` _,1,2,2,3,4,5,6,6,6,6,6,7,7,8,8,] // 2 dupes nuked.
+```
+
+4. move any valid entries to the ealiest free space
+
+```ts
+11.   [0, 0, 1, 1, _, _, _,`>` 2,2,3,4,5,6,6,6,6,6,7,7,8,8,] // i = 7, nuked = 3, free space = (i - nuked = 4)
+12.   [0, 0, 1, 1, 2, _, _, _, `>` 2,3,4,5,6,6,6,6,6,7,7,8,8,] // i = 8, nuked = 3, free space = (i - nuked = 5)
+13.   [0, 0, 1, 1, 2, 2, _, _, _, `>` 3,4,5,6,6,6,6,6,7,7,8,8,]
+14.   [0, 0, 1, 1, 2, 2, 3, _, _, _, `>`,4,5,6,6,6,6,6,7,7,8,8,]
+15.   [0, 0, 1, 1, 2, 2, 3, 4, _, _, _, `>` 5,6,6,6,6,6,7,7,8,8,]
+16.   [0, 0, 1, 1, 2, 2, 3, 4, 5, _, _, _, `>` 6,6,6,6,6,7,7,8,8,]
+17.   [0, 0, 1, 1, 2, 2, 3, 4, 5, 6, _, _, _, `>` 6,6,6,6,7,7,8,8,]
+18.   [0, 0, 1, 1, 2, 2, 3, 4, 5, 6, 6, _, _, _, `>` 6,6,6,7,7,8,8,]
+```
+
+lets see what this looks like in code.
+
+```ts
+function removeDuplicates(nums: number[]): number {
+    const NAN = Number.POSITIVE_INFINITY;
+    const LENGTH: number = nums.length;
+    let count: number = 1;
+    let seen = NAN;
+    let removed = 0;
+
+    for (let i = 0; i < nums.length; i++) {
+        const firstAvailableIndex = i - removed;
+        const currentNumber = nums[i];
+        if (firstAvailableIndex !== i) {
+            nums[i] === NAN;
+            nums[firstAvailableIndex] = currentNumber
+        }
+        // Increment the counter if we've seen this number before
+        if (currentNumber === seen) {
+            count++;
+        } else {
+            seen = currentNumber;
+            count = 1;
+        }
+        if (count > 2) {
+            // Remove this number if its appeared twice already
+            nums[i] = NAN;
+            removed += 1;
+        } else {
+            const tmp = nums[i];
+            nums[i] = NAN;
+            nums[i - removed] = tmp
+        }
+    }
+    return LENGTH - removed;
+};
+```
+
+### result
+
+it actually took longer — 59ms.
+
+using null instead of Number.POSITIVE_INFINITY got it down to 54 but thats not so impressive.
+
+lets see whats happened.
+
+the 56ms version has:
+- a single loop
+- three branches on each iteration (max 2 executed)
+- one operation performed on one element in the array (at the current index)
+- a sort at the end
+
+meanwhile, my 59ms version has:
+- two extra tracking variables inside the loop
+- five branches, max 3 executed
+- redundant duplicate logic (WHAT)
+- up to four operations on array members
+
+i think i had the right idea, but my execution was very poor.
+
+time for v2 of this one.
+
